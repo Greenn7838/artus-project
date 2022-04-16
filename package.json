@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "prettier": "2.6.2"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "mineflayer": "^4.2.0",
+    "mineflayer-antiafk": "^1.1.1",
+    "mineflayer-auto-eat": "^2.3.3",
+    "mineflayer-pathfinder": "^2.0.0"
+  }
+}
