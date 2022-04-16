@@ -9,13 +9,14 @@ const name = config.username;
 const loginmsg = config["login-chat"];
 const state = ['forward', 'back', 'left', 'right', 'jump', 'sprint', 'sneak'];
 const prefix = config["prefix"];
-
-const bot = mineflayer.createBot({
+const options = {
     host: IP,
     username: name,
     hideErrors: true,
     version: "1.17",
-});
+};
+
+const bot = mineflayer.createBot(options);
 
 
 bot.on('login', function() {
@@ -39,25 +40,11 @@ bot.on('physicTick', function() {
     bot.lookAt(playerEntity.position);
 });
 
-bot.on('chat', function(username, message) {
-    if (username === bot.username) return;
-
-    if (message === `${prefix}hello`) {
-        bot.chat('chào');
-    };
-    if (message === `${prefix}tpa`) {
-        bot.chat(`/tpa ${username}`);
-    };
-    if (message === `${prefix}back`) {
-        bot.chat('/back');
-    };
-});
-
 let goal = null;
 
 function followPlayer(username) {
     const player = bot.players[username];
-    if (!playerNearest) {
+    if (!player) {
         bot.chat(`Không thấy ${username}`);
         return;
     }
@@ -75,26 +62,40 @@ function stopFollow() {
     bot.pathfinder.setMovements(null);
 }
 
-bot.on('chat', (username, message) => {
+bot.on('chat', function(username, message) {
     if (username === bot.username) return;
-    if (message === `${prefix}follow me`) {
-        followPlayer(username);
-        return;
-    };
-    if (message === `${prefix}stop`) {
-        bot.chat('Tôi sẽ phải dừng di chuyển');
-        stopFollow();
+    if (!message.startsWith(prefix)) return;
+    bot.afk.stop();
+    const args = message.slice(prefix.length).trim().split(/ +/g);
+    const cmd = args.shift().toLowerCase();
+
+    if (cmd === 'hello') {
+        bot.chat('Ai, cái gì? Túi đen đen á?');
     }
-})
+    if (cmd === 'tpa') {
+        bot.chat(`/tpa ${username}`);
+    }
+    if (cmd === 'follow') {
+        followPlayer(username);
+    }
+    if (cmd === 'stop') {
+        stopFollow();
+        bot.chat('Tôi sẽ k di chuyển');
+    }
+});
 
 bot.on('death', function() {
     bot.emit('respawn');
 });
 
 bot.on('spawn', () => {
-    bot.setOptions({ fishing: false });
     bot.afk.start();
 });
 bot.on('health', () => {
     if (bot.health < 5) bot.afk.stop();
 });
+
+bot.on('kicked', (res) => {
+    console.log(res);
+    bot.connect(options);
+})
